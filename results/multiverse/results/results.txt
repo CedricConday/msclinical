@@ -1,0 +1,15 @@
+32 definitions; events 68-99; PIRA share 0.44-0.86; PIRMA 6-43
+influence on PIRA share
+      choice  mean_abs_change  max_abs_change
+    raw_days         0.317277        0.341176
+confirm_days         0.076199        0.091463
+   reference         0.027931        0.061438
+  mri_window         0.000000        0.000000
+  components         0.000000        0.000000
+influence on the PIRMA count
+      choice  mean_abs_change  max_abs_change
+confirm_days            12.75            24.0
+  mri_window            12.25            23.0
+    raw_days             6.00            11.0
+   reference             3.50            11.0
+  components             0.00             0.0
