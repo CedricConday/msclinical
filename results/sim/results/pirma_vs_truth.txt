@@ -1,0 +1,6 @@
+noise 0.00 confirm 84d: true steps 230, events 99, from noise 0, agreement 0.71, called {'RAW': 48, 'PIRA_MRI_active': 37, 'PIRMA': 14}
+noise 0.00 confirm 168d: true steps 230, events 79, from noise 0, agreement 0.68, called {'RAW': 43, 'PIRA_MRI_active': 27, 'PIRMA': 9}
+noise 0.15 confirm 84d: true steps 230, events 99, from noise 9, agreement 0.65, called {'RAW': 44, 'PIRA_MRI_active': 40, 'PIRMA': 15}
+noise 0.15 confirm 168d: true steps 230, events 73, from noise 6, agreement 0.60, called {'RAW': 39, 'PIRA_MRI_active': 28, 'PIRMA': 6}
+noise 0.30 confirm 84d: true steps 230, events 122, from noise 33, agreement 0.52, called {'PIRA_MRI_active': 59, 'RAW': 48, 'PIRMA': 15}
+noise 0.30 confirm 168d: true steps 230, events 72, from noise 8, agreement 0.57, called {'RAW': 39, 'PIRA_MRI_active': 26, 'PIRMA': 7}
