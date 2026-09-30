@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Open MS Research Tools</title>
+<meta name="description" content="Small, tested, open-source tools for multiple sclerosis research, each checked against real or known-truth data.">
+<style>
+:root{--bg:#fbfbfa;--fg:#1b1b1b;--muted:#5b5f63;--line:#e3e3e0;--card:#fff;--accent:#1f5fae;--warn:#a23b1a}
+@media (prefers-color-scheme:dark){:root{--bg:#111315;--fg:#e9e9e7;--muted:#a3a7ab;--line:#2a2e33;--card:#181b1e;--accent:#8ab4ff;--warn:#ff9b7a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Georgia,"Iowan Old Style",serif;line-height:1.55}
+.wrap{max-width:980px;margin:0 auto;padding:40px 16px 64px}
+header h1{font-size:2.1rem;line-height:1.15;margin:0 0 10px;font-weight:600}
+header p{font-family:system-ui,-apple-system,sans-serif;color:var(--muted);max-width:720px;margin:0}
+h2{font-size:1.35rem;margin:44px 0 6px;font-weight:600}
+.lede{font-family:system-ui,sans-serif;color:var(--muted);margin:0 0 16px;max-width:720px}
+.finding{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;margin:22px 0;padding:18px;background:var(--card);border:1px solid var(--line);border-radius:10px}
+@media (max-width:760px){.finding{grid-template-columns:1fr}}
+.finding img{width:100%;border-radius:6px;border:1px solid var(--line)}
+.finding h3{margin:0 0 6px;font-size:1.1rem}
+.finding p{font-family:system-ui,sans-serif;font-size:.95rem;margin:0 0 8px}
+.finding a,.tools a{color:var(--accent)}
+.num{font-size:2rem;font-weight:600;font-family:system-ui,sans-serif;line-height:1}
+.cta{display:inline-block;margin-top:18px;padding:10px 16px;border-radius:8px;background:var(--accent);color:#fff;text-decoration:none;font-family:system-ui,sans-serif}
+.tools{columns:3 220px;column-gap:24px;font-family:system-ui,sans-serif;font-size:.92rem;padding:0;list-style:none}
+.tools li{break-inside:avoid;margin:0 0 10px}
+.tools b{display:block}
+.tools span{color:var(--muted)}
+footer{margin-top:48px;font-family:system-ui,sans-serif;font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>Open tools for multiple sclerosis research, each checked against the truth</h1>
+<p>Six MIT-licensed Python packages for disability, relapses, NEDA, trial design, imaging and data quality.
+Every one reports how well it does its job on real data or on data with known truth, and several found problems
+in the data and methods the field already uses. Research software, not medical devices.</p>
+<a class="cta" href="browser/">Try PIRA and NEDA in your browser: no install, no upload</a>
+</header>
+
+<h2>What the checks found</h2>
+<p class="lede">Four results, each with its code and data in the linked repository.</p>
+
+<div class="finding">
+<div><div class="num">~1 per lesion</div><h3>Slowly expanding lesion candidates appear with nothing expanding</h3>
+<p>With every lesion unchanged, the Elliott SEL rule still marks about one candidate per lesion at a one-year
+interval, 1.7 at six months, almost none at two years. A smoother registration brings it to 0.16 and, on 25 patients
+with injected expansion, still finds every expanding lesion (false positives 0.50 to 0.20). A SEL count means nothing
+without its interval and registration settings.</p>
+<p><a href="https://github.com/CedricConday/mscard/blob/master/docs/SEL_NOISE_FLOOR.md">mscard: SEL noise floor</a></p></div>
+<img src="img/sel_noise_floor.png" alt="SEL candidates per lesion against scan interval for three registration settings">
+</div>
+
+<div class="finding">
+<div><div class="num">0.44 to 0.86</div><h3>The PIRA share depends on the definition</h3>
+<p>The same simulated cohort gives a PIRA share anywhere from 0.44 to 0.86 across 32 published definitions. The
+relapse window alone moves it by 32 points. With 30 % EDSS misrating, 27 % of 12-week confirmed events are noise,
+and they are called PIRA.</p>
+<p><a href="https://github.com/CedricConday/msclinical#multiverse">msmultiverse</a> · <a href="https://github.com/CedricConday/msclinical#sim">trialtruth</a> · <a href="https://github.com/CedricConday/msclinical#pirma">pirma</a></p></div>
+<div class="num" style="font-size:1rem;font-weight:400;color:var(--muted)">PIRA is an outcome in 23 registered MS studies, 8 of them phase 3 (<a href="https://github.com/CedricConday/mstrial#registry">mstrials</a>, live ClinicalTrials.gov query).</div>
+</div>
+
+<div class="finding">
+<div><div class="num">half</div><h3>A public longitudinal ground truth that flickers</h3>
+<p>About half the lesion sites in MSLesSeg's multi-visit annotations appear and disappear in ways a chronic lesion
+does not, and in 11 of 24 patients the T1w of one visit separates grey and white matter while another's does not. The known-truth
+alternative: <a href="https://github.com/CedricConday/bidsgate#longphantom">longphantom</a> builds multi-visit series from one
+real scan; lesiontrack gets 24 of 24 lesion fates right on it.</p>
+<p><a href="https://github.com/CedricConday/msdataqc#gtdrift">gtdrift</a> · <a href="https://github.com/CedricConday/msdataqc#intensitydrift">intensitydrift</a></p></div>
+<img src="img/lesionmap.png" alt="MSLesSeg lesion probability map, periventricular pattern">
+</div>
+
+<div class="finding">
+<div><h3>A longitudinal MRI report that grades itself</h3>
+<p>mscard reports new, enlarging, shrinking and resolved lesions, SEL candidates and brain volume change. Before
+the report is written, it runs the same pipeline on the patient's own baseline with known changes injected, and
+every number carries a badge that says how much of that truth came back.</p>
+<p><a href="https://github.com/CedricConday/mscard">mscard</a> · <a href="https://cedricconday.github.io/mscard/">24 reports online</a></p></div>
+<img src="img/mscard.png" alt="mscard findings cards with calibration badges">
+</div>
+
+<h2>Six packages</h2>
+<ul class="tools">
+<li><b><a href="https://github.com/CedricConday/msclinical">msclinical</a></b><span>confirmed disability and SDMT worsening, RAW/PIRA/PIRMA, NEDA, relapse hygiene, treatment epochs, EDSS noise, the PIRA definition multiverse, the shared table schema, feasibility, Table 1, report parsing, simulated cohorts with known truth</span></li>
+<li><b><a href="https://github.com/CedricConday/mstrial">mstrial</a></b><span>endpoints from plain tables, sample size for lesion counts, MRI schedules under a budget, PIRA power through the whole pipeline, the registered-trial landscape</span></li>
+<li><b><a href="https://github.com/CedricConday/mscard">mscard</a></b><span>the longitudinal MRI report that grades itself, the SEL noise-floor and sensitivity studies, FHIR export</span></li>
+<li><b><a href="https://github.com/CedricConday/bidsgate">bidsgate</a></b><span>known truth injected into real scans: segmenter scorecards, scan-rescan phantoms, benchmark cards, multi-visit phantoms</span></li>
+<li><b><a href="https://github.com/CedricConday/msdataqc">msdataqc</a></b><span>ground-truth consistency, contrast drift, protocol checks, counting conventions, lesion maps, one QC page, MSLesSeg as BIDS</span></li>
+<li><b><a href="https://github.com/CedricConday/mslesions">mslesions</a></b><span>McDonald 2024 topography, optic nerve by OCT/VEP, T1 black holes, parenchymal fraction, behind a tissue gate that refuses unreadable scans</span></li>
+</ul>
+<p style="font-size:.9rem;color:var(--muted)">Built on <a href="https://github.com/CedricConday/lesiontrack">lesiontrack</a> (lesion tracking and slowly expanding lesions).</p>
+
+<footer>Built by Cedric Conday with Claude. Every number on this page is in the linked repository with the code
+that produced it. Three independent reviews of the packages found 49 defects before release, three published numbers among
+them; all are fixed or retracted, and each correction is in the repository's history and README.</footer>
+</div>
+</body>
+</html>

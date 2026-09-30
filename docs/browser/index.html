@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MS worsening, PIRA and NEDA in the browser</title>
+<style>
+:root{--bg:#fff;--fg:#1a1a1a;--muted:#555;--line:#ddd;--card:#f6f7f8;--accent:#1f5fae}
+@media (prefers-color-scheme:dark){:root{--bg:#121416;--fg:#e8e8e8;--muted:#a0a4a8;--line:#30343a;--card:#1b1e22;--accent:#79a8ff}}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:1000px;margin:24px auto;padding:0 16px;line-height:1.45}
+h1{font-size:1.4rem;margin:0 0 4px}h2{font-size:1.05rem;margin:24px 0 8px}
+p.lead,.small{color:var(--muted)}.small{font-size:.85rem}
+textarea{width:100%;box-sizing:border-box;min-height:120px;font-family:ui-monospace,Menlo,monospace;font-size:.8rem;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+label{font-weight:600;font-size:.9rem}
+button{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:9px 16px;font-size:.95rem;cursor:pointer}
+button:disabled{opacity:.5;cursor:wait}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:12px 0}
+select,input{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px}
+.out{overflow-x:auto}table{border-collapse:collapse;font-size:.82rem;margin:6px 0 16px}td,th{border-bottom:1px solid var(--line);padding:4px 8px;text-align:left;white-space:nowrap}
+#status{font-size:.9rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<h1>Confirmed worsening, PIRA and NEDA in your browser</h1>
+<p class="lead">Paste a visit table (EDSS), relapses and MRI activity. The analysis runs in this page with Python
+(Pyodide) and the open packages <a href="https://github.com/CedricConday/msclinical#edssplus">msclinical edssplus</a>,
+<a href="https://github.com/CedricConday/msclinical#pirma">msclinical pirma</a>, <a href="https://github.com/CedricConday/msclinical#neda">msclinical neda</a>,
+<a href="https://github.com/CedricConday/msclinical#relapses">msclinical relapses</a> and <a href="https://github.com/CedricConday/msclinical#cogworse">msclinical cogworse</a>.
+Nothing is uploaded; the data never leave your machine. Research software, not a medical device.</p>
+
+<div class="grid">
+  <div><label for="visits">Visits: patient, date, edss [, sdmt]</label><textarea id="visits">patient,date,edss,sdmt
+A,2020-01-01,2.0,52
+A,2020-07-01,3.0,55
+A,2020-10-01,3.0,49
+A,2021-04-01,3.0,48
+B,2020-01-01,3.5,40
+B,2020-06-01,4.5,41
+B,2020-10-01,4.5,40
+B,2021-03-01,4.5,39
+C,2020-01-01,1.5,60
+C,2020-07-01,1.5,61
+C,2021-01-01,1.5,62</textarea></div>
+  <div><label for="relapses">Relapses: patient, date [, fever]</label><textarea id="relapses">patient,date,fever
+B,2020-05-10,no
+B,2020-05-24,no
+C,2020-09-01,yes</textarea></div>
+  <div><label for="mri">MRI: patient, date, new_t2, enlarging_t2, gd</label><textarea id="mri">patient,date,new_t2,enlarging_t2,gd
+A,2020-01-01,0,0,0
+A,2020-12-01,0,0,0
+B,2020-01-01,0,0,0
+B,2020-12-01,2,0,1
+C,2020-01-01,0,0,0
+C,2020-12-01,0,0,0</textarea></div>
+</div>
+<div class="row">
+  <label>Confirmation <select id="confirm"><option value="84">12 weeks</option><option value="168">24 weeks</option></select></label>
+  <label>Reference <select id="reference"><option>roving</option><option>fixed</option></select></label>
+  <label>Relapse window, days <input id="raw" type="number" value="90" min="0" style="width:5em"></label>
+  <button id="run" disabled>Loading Python…</button>
+  <span id="status"></span>
+</div>
+<div class="out" id="out"></div>
+<p class="small">Dates as YYYY-MM-DD. Relapse ascertainment is assumed to start at each patient's first visit. The rules are
+in each package's source; open it before relying on a number.</p>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js" integrity="sha384-i3R37b3tF+HWudsUf1VSEOY2YxwSNMqY8DQa9Z0O3xh+NkJ9o+yjcGyIi5huj+nB" crossorigin="anonymous"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+let py;
+async function boot() {
+  $("status").textContent = "downloading Python and pandas (first load ~20 MB)…";
+  py = await loadPyodide();
+  await py.loadPackage(["pandas", "micropip"]);
+  const base = new URL("wheels/", location.href).href;
+  await py.runPythonAsync(`
+import micropip
+await micropip.install(["${base}msclinical-0.1.0-py3-none-any.whl"], deps=False)
+`);
+  $("run").disabled = false; $("run").textContent = "Run"; $("status").textContent = "ready";
+}
+async function run() {
+  $("run").disabled = true; $("status").textContent = "running…";
+  py.globals.set("V", $("visits").value); py.globals.set("R", $("relapses").value); py.globals.set("M", $("mri").value);
+  py.globals.set("CD", parseInt($("confirm").value)); py.globals.set("REF", $("reference").value); py.globals.set("RAW", parseInt($("raw").value));
+  try {
+    const html = await py.runPythonAsync(`
+import io, pandas as pd
+from msclinical.edssplus.core import Rules, events
+from msclinical.pirma.core import Windows, attribute, summary
+from msclinical.neda.core import Params, neda, cohort
+from msclinical.relapses.core import check
+from msclinical.cogworse.core import events as cog_events
+v = pd.read_csv(io.StringIO(V)); r_raw = pd.read_csv(io.StringIO(R)); m = pd.read_csv(io.StringIO(M))
+r, removed, rs = check(r_raw)
+ev = events(v, Rules(confirm_days=CD, reference=REF), components=("edss",))
+first = pd.to_datetime(v["date"]).groupby(v["patient"]).min()
+att = attribute(ev, r, m, None, Windows(raw_days=RAW), visits_first=first)
+n = neda(v, r, m, p=Params(cdw=Rules(confirm_days=CD, reference=REF)))
+s = summary(att) if len(att) else {"events": 0}
+out = "<h2>Relapses after cleaning (msclinical relapses)</h2><p class='small'>" + str(rs) + "</p>" + (removed[["patient","date","reason"]].to_html(index=False) if len(removed) else "<p>nothing removed</p>")
+out += "<h2>Confirmed worsening events</h2>" + (ev.to_html(index=False) if len(ev) else "<p>none</p>")
+out += "<h2>Attribution (RAW / PIRA / PIRMA)</h2>" + (att[["patient","onset_date","confirmation_date","class","reason"]].to_html(index=False) if len(att) else "<p>no confirmed event</p>")
+out += "<h2>NEDA-3 per year</h2>" + n[["patient","window","start","end","relapses","cdw_events","mri_scans","neda3","activity"]].to_html(index=False)
+if "sdmt" in v:
+    ce = cog_events(v[["patient","date","sdmt"]])
+    out += "<h2>Confirmed SDMT worsening (msclinical cogworse)</h2>" + (ce.to_html(index=False) if len(ce) else "<p>none</p>")
+out += "<p class='small'>Summary: " + str(s) + " | cohort NEDA-3 year 1: " + str(cohort(n, 1)["neda3"]) + "</p>"
+out
+`);
+    $("out").innerHTML = html; $("status").textContent = "done";
+  } catch (e) { $("out").innerHTML = "<pre>" + String(e).replace(/</g, "&lt;") + "</pre>"; $("status").textContent = "error"; }
+  $("run").disabled = false;
+}
+$("run").addEventListener("click", run);
+boot();
+</script>
+</body>
+</html>
