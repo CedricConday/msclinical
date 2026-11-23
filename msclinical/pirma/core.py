@@ -11,8 +11,10 @@ For each confirmed event (from ``edssplus``) with onset date o, reference date r
   lesions) on any scan dated in [r, c] (``mri_window``: ``reference`` or ``onset``), and at least one
   scan in that window. PIRA with activity is ``PIRA_MRI_active``; PIRA with no scan in the window is
   ``PIRA_MRI_unknown`` (never silently PIRMA).
-* An event whose window starts before ``followup_start`` (default: the patient's first visit) has no
-  relapse coverage and is ``undetermined``.
+* An event whose window starts before ``followup_start`` has no relapse coverage and is ``undetermined``.
+  Default start: the patient's first visit when ``visits_first`` is given (the CLI always passes it); without
+  it, the earliest ``reference_date`` among that patient's events, which is later than the first visit when a
+  roving reference has moved. Pass ``visits_first`` (or ``followup_start``) when calling from Python.
 * MRI scans count only when every activity column present is read (not missing); a scan row with missing
   counts is not evidence of no activity. An MRI table with none of the activity columns is an error.
 """
@@ -35,7 +37,8 @@ def attribute(events: pd.DataFrame, relapses: pd.DataFrame, mri: pd.DataFrame | 
               followup_start: pd.DataFrame | None = None, w: Windows | None = None,
               visits_first: pd.Series | None = None) -> pd.DataFrame:
     """events: edssplus.events output. relapses: patient, date. mri: patient, date + mri_columns.
-    followup_start: patient, date (start of relapse ascertainment); default is each patient's reference date."""
+    followup_start: patient, date (start of relapse ascertainment). Default: ``visits_first`` (patient -> first
+    visit date) if given, else the earliest event reference_date per patient (see the module docstring)."""
     w = w or Windows()
     ev = events[events["status"] == "confirmed"].copy()
     for c in ("onset_date", "reference_date", "confirmation_date"):
