@@ -48,7 +48,14 @@ Rules (`msclinical/edssplus/core.py`, `Rules`): EDSS +1.5 from 0, +1.0 from 1.0 
 tests at least 20 % slower (Cadavid et al. 2017); the worsening must hold at every visit up to the first
 visit at least `confirm_days` after onset. A worsening still open at the end of follow-up is
 `unconfirmed`, never an event. Roving reference as in Kappos et al. 2018, including re-baselining on
-confirmed improvement.
+confirmed improvement: a lower value becomes the reference when every visit up to the first one at least
+`confirm_days` later stays at or below it, and the search resumes from that lower visit.
+
+Two choices here differ from other open tools and change results. The +1.0 step runs to a reference of 5.5;
+[pymsprog](https://github.com/noemimontobbio/pymsprog) stops it at 5.0 (Lorscheider et al. 2016), so patients
+at 5.5 get an earlier event there. Set `Rules(edss_steps=((0.0, 1.5), (5.0, 1.0), (10.0, 0.5)))` to match it.
+After a confirmed improvement, pymsprog moves the reference to the confirmation visit instead; on simulated
+cohorts this changes about one event in 600.
 
 Relapse attribution (RAW, PIRA, PIRMA) is the job of the companion package
 [pirma](https://github.com/CedricConday/msclinical#pirma); NEDA-3/4 is [neda](https://github.com/CedricConday/msclinical#neda).
@@ -75,6 +82,25 @@ package never infers "no MRI activity" from missing MRI.
 
 Existing open code (Bsteh, Marti, Hoepner; drstrupf/multiple-sclerosis-disability-progression)
 separates PIRA from RAW on EDSS; pirma adds the MRI-activity split and the timed-test components.
+
+### Checked against pymsprog (`results/pymsprog/`)
+
+[pymsprog](https://github.com/noemimontobbio/pymsprog) 1.0.7 (Montobbio et al., Mult Scler 2024) is an
+independent implementation of the same rules. On the same 3,000 simulated patients from
+[sim](https://github.com/CedricConday/msclinical#sim), with its settings matched to these:
+
+| | Same events | Differ |
+|---|---:|---:|
+| First CDW, fixed reference | 539 | 0 |
+| First CDW, fixed reference, irregular visits (dates ±20 days, 10 % missed, interim visits) | 492 | 0 |
+| All CDW, roving reference | 601 | 1 (re-baselining after improvement, see edssplus) |
+| RAW/PIRA class of those 601 events | 596 | 5 |
+
+The five are all a relapse 85 to 92 days after onset, just before confirmation: pirma calls the event RAW,
+pymsprog's window counted from onset leaves it unclassified. With every pymsprog setting at its default,
+94.7 % of shared events get the same class; the rest come from its different windows, listed in
+`results/pymsprog/compare_attribution.py`. Both tools give the simulator's true cause for about 81 % of
+events. Rerun with `pip install pymsprog==1.0.7` and the two scripts in that folder.
 
 ## cogworse
 

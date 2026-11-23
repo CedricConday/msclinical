@@ -1,0 +1,5 @@
+setting	both	only_ms	only_py	patients	agreement
+fixed_first_matched	492	0	0	3000	1.0
+fixed_first_own_delta	477	15	42	3000	0.8933
+fixed_first_pymsprog_defaults	474	18	53	3000	0.8697
+roving_multiple_matched	540	0	1	3000	0.9982

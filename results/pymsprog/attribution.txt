@@ -1,0 +1,20 @@
+
+== py_defaults: 561 shared events, 40 msclinical-only, 57 pymsprog-only
+py_class  PIRA  RAW  undefined
+ms_class                      
+PIRA       356    0          2
+RAW         16  175         12
+   ms_class matches simulator truth on 81.7% of 526 events with a true cause
+   py_class matches simulator truth on 81.9% of 526 events with a true cause
+
+== py_matched: 601 shared events, 0 msclinical-only, 1 pymsprog-only
+py_class  PIRA  RAW  undefined
+ms_class                      
+PIRA       385    0          0
+RAW          0  211          5
+   ms_class matches simulator truth on 81.4% of 565 events with a true cause
+   py_class matches simulator truth on 81.1% of 565 events with a true cause
+    setting  shared  same_class  agreement
+py_defaults     561         531     0.9465
+ py_matched     601         596     0.9917
+ALLDONE
